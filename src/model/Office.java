@@ -2,13 +2,10 @@ package model;
 
 import akka.actor.ActorRef;
 
-/**
- * Created by coen on 31-10-2018.
- */
 public class Office {
 
-    private boolean isAvailable;
     private ActorRef customer;
+    private ActorRef reservedBy;
     private int officeNr;
     private int locationNr;
 
@@ -16,31 +13,32 @@ public class Office {
         this.officeNr = officeNr;
         this.locationNr = locationNr;
 
-        isAvailable = true;
         customer = null;
+        reservedBy = null;
     }
 
-    public void setCustomer(ActorRef customer) {
-        assert isAvailable = true;
-        this.customer = customer;
-        isAvailable = false;
+    public boolean isAvailable() {
+        return !(reservedBy != null || customer != null);
+    }
+
+    public boolean isReservedBy(ActorRef actor) {
+        return actor == reservedBy;
     }
 
     public ActorRef getCustomer() {
         return customer;
     }
 
-    public void clearOffice() {
-        customer = null;
-        isAvailable = true;
+    public void setCustomer(ActorRef customer) {
+        this.customer = customer;
     }
 
-    public boolean isAvailable() {
-        return isAvailable;
+    public ActorRef getReservedBy() {
+        return reservedBy;
     }
 
-    public void setAvailability(boolean newAvailability) {
-        isAvailable = newAvailability;
+    public void setReservedBy(ActorRef reservedBy) {
+        this.reservedBy = reservedBy;
     }
 
     @Override

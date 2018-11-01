@@ -1,4 +1,5 @@
 import akka.actor.AbstractActor;
+import akka.actor.Props;
 import model.Location;
 import model.Office;
 
@@ -13,6 +14,10 @@ import java.util.Map;
  * Controls a locations
  */
 public class LocationAgent extends AbstractActor{
+
+    public static Props props(int locationAgentNr, Location location) {
+        return Props.create(LocationAgent.class, locationAgentNr, location);
+    }
 
     private int locationAgentNr;
     private Location location;
@@ -32,12 +37,21 @@ public class LocationAgent extends AbstractActor{
         return availableOffices;
     }
 
+    public int getLocationNr() {
+        return location.getLocationNr();
+    }
+
     @Override
     public AbstractActor.Receive createReceive() {
         return receiveBuilder()
+                .match(Messages.OfficeListRequest.class, officeListRequest -> {
+                    System.out.println(this.toString() + " received officeListRequest");
+                    // Return the list of offices on this location
+                    getSender().tell(new Messages.OfficeList(location.getOffices(), officeListRequest.customer), getSelf());
+                })
                 .match(Messages.AvailableOfficeListRequest.class, availableOfficeListRequest -> {
                     // Return the list of available offices on this location
-                    getSender().tell(new Messages.AvailableOfficeList(getAvailableOffices(), availableOfficeListRequest.cumstomer), getSelf());
+                    getSender().tell(new Messages.AvailableOfficeList(getAvailableOffices(), availableOfficeListRequest.request), getSelf());
                 })
                 .build();
     }

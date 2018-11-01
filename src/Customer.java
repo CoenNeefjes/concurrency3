@@ -1,30 +1,32 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
+import akka.actor.Props;
 import model.Location;
 import model.Office;
 
 import java.util.List;
 import java.util.Random;
 
-/**
- * Created by Coen Neefjes on 30-10-2018.
- */
 public class Customer extends AbstractActor{
 
+    public static Props props(int customerNr, ActorRef superFlex) {
+        return Props.create(Customer.class, customerNr, superFlex);
+    }
+
     private int customerNr;
-    private ActorRef rentalAgent;
+    private ActorRef superFlex;
     private Location chosenLocation;
     private Office chosenOffice;
 
-    public Customer (int customerNr, ActorRef rentalAgent) {
+    public Customer (int customerNr, ActorRef superFlex) {
         this.customerNr = customerNr;
-        this.rentalAgent = rentalAgent;
+        this.superFlex = superFlex;
     }
 
     @Override
     public void preStart() throws Exception {
-        // Ask for a list of all locations
-        rentalAgent.tell(new Messages.LocationListRequest(), getSelf());
+        // Ask for a list of all locations from superFlex
+        superFlex.tell(new Messages.LocationListRequest(), getSelf());
     }
 
     @Override
@@ -41,16 +43,28 @@ public class Customer extends AbstractActor{
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Messages.LocationList.class, locationList -> {
-                    // Choose one of the returned locations
+                    assert chosenLocation == null && chosenOffice == null;
+                    System.out.println(this.toString() + " received locationList");
+                    // Choose location
                     chosenLocation = chooseLocation(locationList.locations);
-                    // Aks for a list of offices on chosen location
-                    rentalAgent.tell(new Messages.OfficesOfLocationRequest(chosenLocation), getSelf());
+                    // Tell rentalAgent we want an office on this location
+                    getSender().tell(new Messages.OfficeListRequest(chosenLocation, getSelf()), getSelf());
                 })
                 .match(Messages.OfficeList.class, officeList -> {
-                    // Choose one of the returned offices
+                    assert chosenLocation != null && chosenOffice == null;
+                    System.out.println(this.toString() + " received officeList");
+                    // Choose office
                     chosenOffice = chooseOffice(officeList.offices);
-                    // Try to reserve te chosen office on the chosen location
-                    rentalAgent.tell(new Messages.GetOfficeOnLocationRequest(chosenOffice, chosenLocation), getSelf());
+                    // Tell the rentalAgent we want this office
+                    getSender().tell(new Messages.GetOfficeOnLocationRequest(chosenOffice, chosenLocation, getSelf()), getSelf());
+                })
+                .match(Messages.LocationFull.class, locationFull -> {
+                    assert chosenLocation != null && chosenOffice != null;
+                    System.out.println(this.toString() + " received location full message");
+                    //TODO: start over
+                })
+                .match(Messages.OfficeAvailable.class, officeAvailable -> {
+
                 })
                 .build();
     }
@@ -63,6 +77,10 @@ public class Customer extends AbstractActor{
     private Office chooseOffice(List<Office> offices) {
         Random random = new Random();
         return offices.get(random.nextInt(offices.size()));
+    }
+
+    public int getCustomerNr() {
+        return this.customerNr;
     }
 
 }

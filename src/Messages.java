@@ -5,64 +5,67 @@ import model.Office;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Coen Neefjes on 30-10-2018.
- */
 public class Messages {
 
     static public class LocationListRequest {} //Customer requests all locations
 
     static public class LocationList {
         public List<Location> locations = new ArrayList<>();
+        public ActorRef customer;
 
-        public LocationList(List<Location> locations) {
+        public LocationList(List<Location> locations, ActorRef customer) {
+            this.customer = customer;
             this.locations = locations;
         }
     } //List of locations
 
-    static public class OfficesOfLocationRequest {
+    static public class OfficeListRequest {
         public Location location;
+        public ActorRef customer;
 
-        public OfficesOfLocationRequest(Location location) {
+        public OfficeListRequest(Location location, ActorRef customer) {
             this.location = location;
+            this.customer = customer;
         }
     } //Customer requests all offices on a location
 
-    static public class OfficeListRequest {} //Customer requests all offices a rentalAgent knows
-
     static public class AvailableOfficeListRequest {
-        public ActorRef cumstomer;
+        public GetOfficeOnLocationRequest request;
 
-        public AvailableOfficeListRequest(ActorRef customer) {
-            this.cumstomer = customer;
+        public AvailableOfficeListRequest(GetOfficeOnLocationRequest request) {
+            this.request = request;
         }
     }
 
     static public class OfficeList {
-        public List<Office> offices = new ArrayList<>();
+        public List<Office> offices;
+        public ActorRef customer;
 
-        public OfficeList(List<Office> offices) {
+        public OfficeList(List<Office> offices, ActorRef customer) {
+            this.customer = customer;
             this.offices = offices;
         }
     } //List of offices
 
     static public class AvailableOfficeList {
         public List<Office> offices;
-        public ActorRef customer;
+        public GetOfficeOnLocationRequest request;
 
-        public AvailableOfficeList(List<Office> offices, ActorRef customer) {
+        public AvailableOfficeList(List<Office> offices, GetOfficeOnLocationRequest request) {
             this.offices = offices;
-            this.customer = customer;
+            this.request = request;
         }
     }
 
     static public class GetOfficeOnLocationRequest {
         public Office office;
         public Location location;
+        public ActorRef customer;
 
-        public GetOfficeOnLocationRequest(Office office, Location location) {
+        public GetOfficeOnLocationRequest(Office office, Location location, ActorRef customer) {
             this.office = office;
             this.location = location;
+            this.customer = customer;
         }
     } //Customer want to reserve an office on a location
 
@@ -85,6 +88,8 @@ public class Messages {
     static public class OfficeNotAvailable {} //notify customer the requested office is not available
 
     static public class PaymentRequest {} //notify customer he has to pay
+
+    static public class LocationFull {} //notify the customer the chosen location has no free offices
 
 
 

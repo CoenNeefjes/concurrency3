@@ -3,9 +3,6 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by coen on 31-10-2018.
- */
 public class Location {
 
     private int locationNr;
@@ -28,6 +25,10 @@ public class Location {
 
     public List<Office> getOffices() {
         return this.offices;
+    }
+
+    public int getLocationNr() {
+        return this.locationNr;
     }
 
     @Override
