@@ -1,4 +1,5 @@
 import akka.actor.ActorRef;
+import akka.actor.dsl.Creators;
 import model.Location;
 import model.Office;
 
@@ -49,11 +50,9 @@ public class Messages {
 
     static public class AvailableOfficeList {
         public List<Office> offices;
-        public GetOfficeOnLocationRequest request;
 
-        public AvailableOfficeList(List<Office> offices, GetOfficeOnLocationRequest request) {
+        public AvailableOfficeList(List<Office> offices) {
             this.offices = offices;
-            this.request = request;
         }
     }
 
@@ -83,13 +82,25 @@ public class Messages {
 
     static public class WaitForOffice {} //Customer wants to wait until the requested office becomes available
 
-    static public class OfficeAvailable {} //notify customer the requested office is available
+    static public class OfficeAvailable {
+        public ActorRef customer;
+
+        public OfficeAvailable(ActorRef customer) {
+            this.customer = customer;
+        }
+    } //notify customer the requested office is available
 
     static public class OfficeNotAvailable {} //notify customer the requested office is not available
 
     static public class PaymentRequest {} //notify customer he has to pay
 
-    static public class LocationFull {} //notify the customer the chosen location has no free offices
+    static public class LocationFull {
+        public ActorRef customer;
+
+        public LocationFull(ActorRef customer) {
+            this.customer = customer;
+        }
+    } //notify the customer the chosen location has no free offices
 
 
 

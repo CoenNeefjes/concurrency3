@@ -49,9 +49,21 @@ public class LocationAgent extends AbstractActor{
                     // Return the list of offices on this location
                     getSender().tell(new Messages.OfficeList(location.getOffices(), officeListRequest.customer), getSelf());
                 })
-                .match(Messages.AvailableOfficeListRequest.class, availableOfficeListRequest -> {
-                    // Return the list of available offices on this location
-                    getSender().tell(new Messages.AvailableOfficeList(getAvailableOffices(), availableOfficeListRequest.request), getSelf());
+                .match(Messages.GetOfficeOnLocationRequest.class, message -> {
+                    if (getAvailableOffices().isEmpty()) {
+                        // The location has no available offices
+                        getSender().tell(new Messages.LocationFull(message.customer),getSelf());
+                    } else if (getAvailableOffices().contains(message.office)) {
+                        // Office is available
+
+                        List<Office> offices = location.getOffices();
+                        int officeIndex = offices.indexOf(message.office);
+                        offices.get(officeIndex).setReservedBy(message.customer);
+
+                        getSender().tell(new Messages.OfficeAvailable(message.customer), getSelf());
+                    } else {
+                        // Office isn't available
+                    }
                 })
                 .build();
     }

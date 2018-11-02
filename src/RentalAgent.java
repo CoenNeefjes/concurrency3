@@ -1,8 +1,11 @@
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import model.Office;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Coen Neefjes on 30-10-2018.
@@ -15,10 +18,13 @@ public class RentalAgent extends AbstractActor{
 
     private int rentalAgentNr;
     private List<ActorRef> locationAgents;
+    private Map<ActorRef, Office> reservations;
 
     public RentalAgent(int rentalAgentNr, List<ActorRef> locationAgents) {
         this.rentalAgentNr = rentalAgentNr;
         this.locationAgents = locationAgents;
+
+        reservations = new HashMap<>();
     }
 
     @Override
@@ -40,22 +46,20 @@ public class RentalAgent extends AbstractActor{
                     officeList.customer.tell(officeList, getSelf());
                 })
                 .match(Messages.GetOfficeOnLocationRequest.class, message -> {
-                    // Ask for available offices so we can determine if the requested office is available
-                    locationAgents.get(message.location.getLocationNr()).tell(new Messages.AvailableOfficeListRequest(message), getSelf());
+                    // Save request locally
+                    reservations.put(getSender(), message.office);
+                    // Redirect message to locationAgent
+                    locationAgents.get(message.location.getLocationNr()).tell(message, getSelf());
                 })
-                .match(Messages.AvailableOfficeList.class, availableOfficeList -> {
-                    // Extract the previous message
-                    Messages.GetOfficeOnLocationRequest getOfficeOnLocationRequest = availableOfficeList.request;
-
-                    if (availableOfficeList.offices.isEmpty()) {
-                        // Notify the customer that the selected location has no free offices
-                        getOfficeOnLocationRequest.customer.tell(new Messages.LocationFull(), getSelf());
-                    } else if (availableOfficeList.offices.contains(getOfficeOnLocationRequest.office)) {
-                        // Notify the customer that the selected office is available
-                        getOfficeOnLocationRequest.customer.tell(new Messages.OfficeAvailable(), getSelf());
-                    } else {
-                        //TODO: send office not available message
-                    }
+                .match(Messages.LocationFull.class, locationFull -> {
+                    assert reservations.containsKey(locationFull.customer);
+                    // Redirect this message to the customer
+                    locationFull.customer.tell(locationFull, getSelf());
+                })
+                .match(Messages.OfficeAvailable.class, officeAvailable -> {
+                    assert reservations.containsKey(officeAvailable.customer);
+                    // Redirect this message to the customer
+                    officeAvailable.customer.tell(officeAvailable, getSelf());
                 })
                 .build();
     }
