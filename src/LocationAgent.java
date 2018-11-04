@@ -56,13 +56,17 @@ public class LocationAgent extends AbstractActor{
                     } else if (getAvailableOffices().contains(message.office)) {
                         // Office is available
 
+                        // Set the office as reserved
                         List<Office> offices = location.getOffices();
                         int officeIndex = offices.indexOf(message.office);
                         offices.get(officeIndex).setReservedBy(message.customer);
 
+                        // Tell the locationAgent the office is available
                         getSender().tell(new Messages.OfficeAvailable(message.customer), getSelf());
                     } else {
                         // Office isn't available
+
+                        //TODO: implement this
                     }
                 })
                 .build();

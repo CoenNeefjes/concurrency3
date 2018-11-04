@@ -64,7 +64,12 @@ public class Customer extends AbstractActor{
                     //TODO: start over
                 })
                 .match(Messages.OfficeAvailable.class, officeAvailable -> {
+                    assert chosenLocation != null && chosenOffice != null;
+                    System.out.println(this.toString() + " received Office available message");
+                    //TODO: choose between accept and decline
 
+                    // Accept Office
+                    getSender().tell(new Messages.AcceptOffice(), getSelf());
                 })
                 .build();
     }

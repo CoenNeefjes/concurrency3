@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Coen Neefjes on 30-10-2018.
- */
 public class RentalAgent extends AbstractActor{
 
     public static Props props(int rentalAgentNr, List<ActorRef> locationAgents) {
@@ -31,17 +28,17 @@ public class RentalAgent extends AbstractActor{
     public AbstractActor.Receive createReceive() {
         return receiveBuilder()
                 .match(Messages.LocationList.class, locationList -> { // Message from superFlex
-                    System.out.println(this.toString() + " redirects locationlist");
+//                    System.out.println(this.toString() + " redirects locationList");
                     // Redirect this message to the customer
                     locationList.customer.tell(locationList, getSelf());
                 })
                 .match(Messages.OfficeListRequest.class, officeListRequest -> { // Message from customer
-                    System.out.println(this.toString() + " redirects officeListRequest");
+//                    System.out.println(this.toString() + " redirects officeListRequest");
                     // Redirect this message to the locationAgent of the specified location
                     locationAgents.get(officeListRequest.location.getLocationNr()).tell(officeListRequest, getSelf());
                 })
                 .match(Messages.OfficeList.class, officeList -> { // Message from locationAgent
-                    System.out.println(this.toString() + " redirects officeList");
+//                    System.out.println(this.toString() + " redirects officeList");
                     // Redirect this message to the customer
                     officeList.customer.tell(officeList, getSelf());
                 })
@@ -60,6 +57,10 @@ public class RentalAgent extends AbstractActor{
                     assert reservations.containsKey(officeAvailable.customer);
                     // Redirect this message to the customer
                     officeAvailable.customer.tell(officeAvailable, getSelf());
+                })
+                .match(Messages.AcceptOffice.class, acceptOffice -> {
+                    System.out.println(this.toString() + " received acceptOffice message");
+                    //TODO: implement
                 })
                 .build();
     }

@@ -80,6 +80,8 @@ public class Messages {
 
     static public class DenyOffice {} //Customer decides he doesn't want the available office
 
+    static public class AcceptOffice {} //Customer accepts office
+
     static public class WaitForOffice {} //Customer wants to wait until the requested office becomes available
 
     static public class OfficeAvailable {
